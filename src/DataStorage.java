@@ -5,6 +5,7 @@ import java.util.List;
 // implements pattern Singletone
 public class DataStorage {
     private List slots = new ArrayList();
+    private List categories = new ArrayList();
     private Hashtable data = new Hashtable();
 
     private static DataStorage instance = null;
@@ -28,6 +29,17 @@ public class DataStorage {
         slots.add("17:00 - 18:00");
         slots.add("18:00 - 19:00");
 
+        categories.add("doing homework");
+        categories.add("watching series");
+        categories.add("watching youtube");
+        categories.add("watching youtube shorts");
+        categories.add("listening music");
+        categories.add("having shower");
+        categories.add("doing activities");
+        categories.add("doing nothing");
+        categories.add("chatting in telegram");
+
+
         for (int i=0; i<slots.size(); i++) {
             data.put(slots.get(i),"");
         }
@@ -43,6 +55,9 @@ public class DataStorage {
 
     public List getSlots() {
         return slots;
+    }
+    public List getCategories() {
+        return categories;
     }
 
  }

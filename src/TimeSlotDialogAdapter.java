@@ -1,7 +1,7 @@
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class TimeSlotDialogActions extends WindowAdapter {
+public class TimeSlotDialogAdapter extends WindowAdapter {
     public void windowClosing(WindowEvent e)
     {
         System.out.println("Window: closed");

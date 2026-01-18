@@ -9,8 +9,7 @@ public class Slot extends Panel {
     Slot(String newSlotTime, String newSlotCategory) {
         slotTime = new Button(newSlotTime);
 
-
-        slotTime.addActionListener(TimeSlotAction.getInstance());
+        slotTime.addActionListener(TimeSlotListener.getInstance());
 
         add(slotTime);
         slotCategory = new Label(newSlotCategory);
