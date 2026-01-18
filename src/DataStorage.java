@@ -30,7 +30,7 @@ public class DataStorage {
         slots.add("18:00 - 19:00");
 
         categories.add("doing homework");
-        categories.add("watching series");
+        categories.add("watching TV Shows");
         categories.add("watching youtube");
         categories.add("watching youtube shorts");
         categories.add("listening music");
