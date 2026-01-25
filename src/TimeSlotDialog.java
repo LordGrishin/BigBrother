@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.time.LocalTime;
 import java.util.List;
 
 public class TimeSlotDialog extends Frame {
@@ -15,11 +16,11 @@ public class TimeSlotDialog extends Frame {
     }
 
     private TimeSlotDialog() {
-        setSize(400, 600);
-        setName("Time Slots");
-
         DataStorage table = DataStorage.getInstance();
         List slots = table.getSlots();
+
+        setSize(400, slots.size()*60);
+        setName("Time Slots");
 
         slotList = new Slot[slots.size()];
 
@@ -27,6 +28,8 @@ public class TimeSlotDialog extends Frame {
             slotList[i] = new Slot( (String) slots.get(i), table.getCategory((String)slots.get(i)));
             add(slotList[i]);
         }
+
+        refreshTable();
 
         setLayout(new FlowLayout(FlowLayout.LEFT));
         addWindowListener(new TimeSlotDialogAdapter());
@@ -39,6 +42,10 @@ public class TimeSlotDialog extends Frame {
 
         for(int i = 0; i < slots.size(); i++) {
             slotList[i].setSlotCategory(table.getCategory((String)slots.get(i)));
+            if(slotList[i].getStartHour()*100+slotList[i].getStartMinute() < LocalTime.now().getHour()*100+LocalTime.now().getMinute() &&
+                    slotList[i].getEndHour()*100+slotList[i].getEndMinute() > LocalTime.now().getHour()*100+LocalTime.now().getMinute()) {
+                slotList[i].setSlotTimeColor();
+            }
         }
         revalidate();
         repaint();

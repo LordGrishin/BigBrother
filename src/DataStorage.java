@@ -28,6 +28,8 @@ public class DataStorage {
         slots.add("16:00 - 17:00");
         slots.add("17:00 - 18:00");
         slots.add("18:00 - 19:00");
+        slots.add("19:00 - 20:00");
+        slots.add("20:00 - 21:00");
 
         categories.add("doing homework");
         categories.add("watching TV Shows");

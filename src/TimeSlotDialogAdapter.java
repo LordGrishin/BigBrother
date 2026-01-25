@@ -1,3 +1,6 @@
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -11,6 +14,7 @@ public class TimeSlotDialogAdapter extends WindowAdapter {
         System.out.println("Window: opened");
     }
     public void windowIconified(WindowEvent e) {
+        //убрать видимость приложения и включить трей
         System.out.println("Window: iconified");
     }
 
