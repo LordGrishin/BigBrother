@@ -20,7 +20,7 @@ public class TimeSlotDialog extends Frame {
         List slots = table.getSlots();
 
         setSize(400, slots.size()*60);
-        setName("Time Slots");
+        setTitle("Time Slots");
 
         slotList = new Slot[slots.size()];
 

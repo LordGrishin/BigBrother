@@ -14,7 +14,8 @@ public class TimeSlotDialogAdapter extends WindowAdapter {
         System.out.println("Window: opened");
     }
     public void windowIconified(WindowEvent e) {
-        //убрать видимость приложения и включить трей
+        TimeSlotDialog.getInstance().setVisible(false);
+        SystemTrayApp.getInstance();
         System.out.println("Window: iconified");
     }
 

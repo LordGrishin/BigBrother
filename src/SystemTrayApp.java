@@ -3,9 +3,18 @@ import java.awt.event.*;
 
 public class SystemTrayApp{
 
-    public static SystemTray systemTray = SystemTray.getSystemTray();
+    private static SystemTrayApp instance = null;
 
-    public static void main(String []args){
+    public static SystemTrayApp getInstance() {
+        if(instance == null) {
+            instance = new SystemTrayApp();
+        }
+        return instance;
+    }
+
+    public SystemTrayApp(){
+        SystemTray systemTray = SystemTray.getSystemTray();
+
         Image image = Toolkit.getDefaultToolkit().getImage("src/eye.jpg");
 
         PopupMenu trayPopupMenu = new PopupMenu();
@@ -21,6 +30,7 @@ public class SystemTrayApp{
                 System.exit(0);
             }
         });
+
         trayPopupMenu.add(close);
 
         TrayIcon trayIcon = new TrayIcon(image, "SystemTray App", trayPopupMenu);
@@ -32,7 +42,5 @@ public class SystemTrayApp{
         }catch(AWTException awtException){
             awtException.printStackTrace();
         }
-
     }
-
 }
