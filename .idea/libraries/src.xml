@@ -1,0 +1,39 @@
+<component name="libraryTable">
+  <library name="src">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ant.test/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ant/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.archive/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.benchmarks/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.gpg.bc.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.gpg.bc/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.http.apache/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.http.server/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.http.test/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.http.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.junit.http/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.junit.ssh/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.junit/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.lfs.server.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.lfs.server/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.lfs.test/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.lfs.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.lfs/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.pgm.test/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.pgm.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.pgm/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ssh.apache.agent/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ssh.apache.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ssh.apache/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ssh.jsch.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ssh.jsch/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.test/exttst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.test/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.test/tst" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit.ui/src" />
+      <root url="file://$PROJECT_DIR$/../Downloads/jgit-master/org.eclipse.jgit/src" />
+    </SOURCES>
+  </library>
+</component>
