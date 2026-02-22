@@ -6,4 +6,4 @@ public class Main {
         System.out.printf("Main: started at %d:%d:%d", LocalTime.now().getHour(), LocalTime.now().getMinute(), LocalTime.now().getSecond());
         TimeSlotDialog dialog = TimeSlotDialog.getInstance();
     }
-}
+}//а еще надо что бы каждый час высвечивалась плашка

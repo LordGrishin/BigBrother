@@ -14,6 +14,7 @@ public class TimeSlotDialogAdapter extends WindowAdapter {
         TimeSlotDialog.getInstance().setVisible(false);
         SystemTrayApp.getInstance();
         System.out.println("Window: iconified");
+        //вызвать метод из storage и отослать на гит
     }
 
     public void windowDeiconified(WindowEvent e) {

@@ -6,7 +6,6 @@ public class CategorySelectionDialogAdapter extends WindowAdapter {
     {
         System.out.println("Dialog: closed");
         CategorySelectionDialog.getInstance().setVisible(false);
-        //отослать storage на гитхаб
     }
     public void windowOpened(WindowEvent e) {
         System.out.println("Dialog: opened");
