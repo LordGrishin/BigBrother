@@ -69,4 +69,14 @@ public class DataStorage {
     //и вообще надо подумать про то как будет работать система передачи data на сервер. Когда надо будет наоборот из гита
     //скачивать файлы. Тяжело. Очень тяжело
 
+//    public void setInterval(String interval, String begin, String end) {
+//        slots.clear();
+//
+//        while(true){
+//
+//        }
+//
+//
+//    }
+
  }
