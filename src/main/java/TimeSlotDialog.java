@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.time.LocalTime;
 import java.util.List;
@@ -22,6 +23,14 @@ public class TimeSlotDialog extends Frame {
         setSize(400, slots.size()*60);
         setTitle("Time Slots");
 
+        Panel gui = new Panel();
+        gui.setPreferredSize(new Dimension(250, 30));
+        Button settings = new Button("Settings");
+        settings.addActionListener(TimeSlotListener.getInstance());
+        gui.add(settings);
+        gui.setLayout(new FlowLayout(FlowLayout.LEFT));
+        add(gui);
+
         slotList = new Slot[slots.size()];
 
         for(int i = 0; i < slots.size(); i++) {
@@ -32,6 +41,7 @@ public class TimeSlotDialog extends Frame {
         refreshTable();
 
         setLayout(new FlowLayout(FlowLayout.LEFT));
+        //setLayout(new GridLayout());
         addWindowListener(new TimeSlotDialogAdapter());
         setVisible(true);
     }

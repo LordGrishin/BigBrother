@@ -16,7 +16,7 @@ public class CategorySelectionDialog extends Frame{
 
     private CategorySelectionDialog() {
         setSize(400, 600);
-        setName("Category Selection");
+        setTitle("Category Selection");
 
         DataStorage table = DataStorage.getInstance();
         List categories = table.getCategories();
