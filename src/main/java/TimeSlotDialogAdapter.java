@@ -1,23 +1,31 @@
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.logging.Logger;
 
 public class TimeSlotDialogAdapter extends WindowAdapter {
-    public void windowClosing(WindowEvent e)
-    {
-        System.out.println("Window: closed");
-        System.exit(0);
-    }
-    public void windowOpened(WindowEvent e) {
-        System.out.println("Window: opened");
-    }
-    public void windowIconified(WindowEvent e) {
+    private static final Logger logger = Logger.getLogger(TimeSlotDialogAdapter.class.getName());
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        logger.info("Window closing - minimizing to tray");
         TimeSlotDialog.getInstance().setVisible(false);
         SystemTrayApp.getInstance();
-        System.out.println("Window: iconified");
-        //вызвать метод из storage и отослать на гит
     }
 
+    @Override
+    public void windowOpened(WindowEvent e) {
+        logger.fine("Window opened");
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+        logger.info("Window iconified - hiding to tray");
+        TimeSlotDialog.getInstance().setVisible(false);
+        SystemTrayApp.getInstance();
+    }
+
+    @Override
     public void windowDeiconified(WindowEvent e) {
-        System.out.println("Window: de-iconified");
+        logger.fine("Window de-iconified");
     }
 }

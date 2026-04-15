@@ -1,12 +1,14 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
 public class TimeSlotListener implements ActionListener {
+    private static final Logger logger = Logger.getLogger(TimeSlotListener.class.getName());
 
     private static TimeSlotListener instance = null;
 
     public static TimeSlotListener getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new TimeSlotListener();
         }
         return instance;
@@ -16,9 +18,8 @@ public class TimeSlotListener implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent event) {
-        System.out.println("Button pressed: " + event.getActionCommand());
-        if(event.getActionCommand().equals("Settings")) SettingsDialog.getInstance().setVisible(true);
-        else CategorySelectionDialog.getInstance().selectCategory(event.getActionCommand());
+        String slotString = event.getActionCommand();
+        logger.fine("Category selection requested for slot: " + slotString);
+        CategorySelectionDialog.getInstance().selectCategory(slotString);
     }
 }
-

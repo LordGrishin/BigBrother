@@ -1,61 +1,144 @@
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.time.LocalTime;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-public class Slot extends Panel {
-    private Button slotTime;
-    private Label slotCategory;
-    private int startHour;
-    private int startMinute;
-    private int endHour;
-    private int endMinute;
+public class Slot extends JPanel {
+    private JButton slotTimeButton;
+    private JLabel slotCategoryLabel;
+    private TimeSlot timeSlot;
+    private boolean isCurrent = false;
 
+    Slot(TimeSlot timeSlot, String category) {
+        this.timeSlot = timeSlot;
 
-    Slot(String newSlotTime, String newSlotCategory) {
-        slotTime = new Button(newSlotTime);
+        setLayout(new BorderLayout());
+        setBackground(ThemeColors.BACKGROUND);
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        setPreferredSize(new Dimension(0, 60));
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        startHour = (newSlotTime.charAt(0)-'0')*10 + (newSlotTime.charAt(1)-'0');
-        startMinute = + (newSlotTime.charAt(3)-'0')*10 + newSlotTime.charAt(4)-'0';
-        endHour = (newSlotTime.charAt(8)-'0')*10 + (newSlotTime.charAt(9)-'0');
-        endMinute = + (newSlotTime.charAt(11)-'0')*10 + newSlotTime.charAt(12)-'0';
+        // Кнопка с временем
+        slotTimeButton = new JButton(timeSlot.toString());
+        slotTimeButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        slotTimeButton.setForeground(ThemeColors.BUTTON_TEXT);
+        slotTimeButton.setBackground(ThemeColors.BUTTON);
+        slotTimeButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
+                new EmptyBorder(10, 20, 10, 20)
+        ));
+        slotTimeButton.setFocusPainted(false);
+        slotTimeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        slotTimeButton.setContentAreaFilled(false);
+        slotTimeButton.setOpaque(true);
+        slotTimeButton.setHorizontalAlignment(SwingConstants.CENTER);
 
-        slotTime.addActionListener(TimeSlotListener.getInstance());
+        slotTimeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!isCurrent) {
+                    slotTimeButton.setBackground(ThemeColors.BUTTON_HOVER);
+                }
+            }
 
-        add(slotTime);
-        slotCategory = new Label(newSlotCategory);
-        add(slotCategory);
-        setLayout(new FlowLayout(FlowLayout.LEFT));
-        setPreferredSize(new Dimension(250, 50));
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!isCurrent) {
+                    slotTimeButton.setBackground(ThemeColors.BUTTON);
+                }
+            }
+        });
+
+        slotTimeButton.addActionListener(TimeSlotListener.getInstance());
+
+        // Лейбл с категорией
+        slotCategoryLabel = new JLabel(category);
+        slotCategoryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        slotCategoryLabel.setForeground(ThemeColors.TEXT_SECONDARY);
+        slotCategoryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Панель для кнопки времени
+        JPanel leftPanel = new JPanel(new GridBagLayout());
+        leftPanel.setOpaque(false);
+        leftPanel.add(slotTimeButton);
+
+        // Панель для категории
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(slotCategoryLabel);
+
+        JPanel westPanel = new JPanel(new BorderLayout());
+        westPanel.setOpaque(false);
+        westPanel.setPreferredSize(new Dimension(140, 60));
+        westPanel.add(leftPanel, BorderLayout.CENTER);
+
+        add(westPanel, BorderLayout.WEST);
+        add(centerPanel, BorderLayout.CENTER);
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                slotTimeButton.doClick();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!isCurrent) {
+                    setBackground(ThemeColors.TITLE_BAR);
+                }
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (!isCurrent) {
+                    setBackground(ThemeColors.BACKGROUND);
+                }
+            }
+        });
+
+        setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColors.TITLE_BAR));
     }
 
     void setSlotCategory(String newSlotCategory) {
-        slotCategory.setText(newSlotCategory);
+        slotCategoryLabel.setText(newSlotCategory);
     }
 
     public String getSlotTime() {
-        return slotTime.getLabel();
+        return slotTimeButton.getText();
     }
 
     public String getSlotCategory() {
-        return slotCategory.getText();
+        return slotCategoryLabel.getText();
     }
 
-    public int getEndHour() {
-        return endHour;
+    public TimeSlot getTimeSlot() {
+        return timeSlot;
     }
 
-    public int getEndMinute() {
-        return endMinute;
+    public void setCurrentSlot() {
+        isCurrent = true;
+        slotTimeButton.setBackground(ThemeColors.CURRENT_SLOT);
+        slotTimeButton.setForeground(Color.WHITE);
+        slotTimeButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.CURRENT_SLOT_BORDER, 2, true),
+                new EmptyBorder(9, 19, 9, 19)
+        ));
+        setBackground(ThemeColors.CURRENT_SLOT_BACKGROUND);
+        slotCategoryLabel.setForeground(ThemeColors.TEXT_PRIMARY);
+        repaint();
     }
 
-    public int getStartHour() {
-        return startHour;
-    }
-
-    public int getStartMinute() {
-        return startMinute;
-    }
-
-    public void setSlotTimeColor() {
-        slotTime.setBackground(Color.getHSBColor(120, 39, 93));
+    public void setNormalSlot() {
+        isCurrent = false;
+        slotTimeButton.setBackground(ThemeColors.BUTTON);
+        slotTimeButton.setForeground(ThemeColors.BUTTON_TEXT);
+        slotTimeButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
+                new EmptyBorder(10, 20, 10, 20)
+        ));
+        setBackground(ThemeColors.BACKGROUND);
+        slotCategoryLabel.setForeground(ThemeColors.TEXT_SECONDARY);
+        repaint();
     }
 }
