@@ -28,5 +28,10 @@
       <version>7.5.0.202512021534-r</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.formdev</groupId>
+      <artifactId>flatlaf</artifactId>
+      <version>3.7.1</version>
+    </dependency>
   </dependencies>
 </project>
