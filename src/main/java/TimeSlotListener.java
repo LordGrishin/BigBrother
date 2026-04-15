@@ -17,7 +17,8 @@ public class TimeSlotListener implements ActionListener {
 
     public void actionPerformed(ActionEvent event) {
         System.out.println("Button pressed: " + event.getActionCommand());
-        CategorySelectionDialog.getInstance().selectCategory(event.getActionCommand());
+        if(event.getActionCommand().equals("Settings")) SettingsDialog.getInstance().setVisible(true);
+        else CategorySelectionDialog.getInstance().selectCategory(event.getActionCommand());
     }
 }
 
