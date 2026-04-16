@@ -21,73 +21,100 @@ public class TimeSlotSettingsDialog extends JDialog {
 
     private TimeSlotSettingsDialog() {
         super((Frame) null, "Time Slot Settings", true);
-        setSize(450, 350);
-        setMinimumSize(new Dimension(400, 300));
+        setSize(450, 480); // Увеличена высота с 350 до 480
+        setMinimumSize(new Dimension(400, 450));
         setLocationRelativeTo(null);
-        setUndecorated(true);
 
         initComponents();
         setVisible(false);
     }
 
     private void initComponents() {
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBackground(ThemeColors.BACKGROUND);
-
-        JPanel titleBar = createTitleBar();
-        mainPanel.add(titleBar, BorderLayout.NORTH);
-
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(ThemeColors.BACKGROUND);
-        contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
+        mainPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
         // Заголовок
         JLabel titleLabel = new JLabel("Configure Time Slots");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(titleLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        mainPanel.add(titleLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Пояснение
         JLabel descriptionLabel = new JLabel("Set working hours (24-hour format, e.g., 9 to 21)");
         descriptionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         descriptionLabel.setForeground(ThemeColors.TEXT_SECONDARY);
         descriptionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(descriptionLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+        mainPanel.add(descriptionLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
 
         // Панель для ввода начального часа
         JPanel startPanel = createTimeInputPanel("Start hour (0-23):", "start");
         startPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(startPanel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        mainPanel.add(startPanel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
         // Панель для ввода конечного часа
         JPanel endPanel = createTimeInputPanel("End hour (0-23):", "end");
         endPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(endPanel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        mainPanel.add(endPanel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Текущие настройки
         currentSettingsLabel = new JLabel(getCurrentSettingsText());
         currentSettingsLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         currentSettingsLabel.setForeground(ThemeColors.TEXT_DIM);
         currentSettingsLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(currentSettingsLabel);
-        contentPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        mainPanel.add(currentSettingsLabel);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Статус
         statusLabel = new JLabel(" ");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         statusLabel.setForeground(ThemeColors.CURRENT_SLOT);
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        contentPanel.add(statusLabel);
+        mainPanel.add(statusLabel);
 
-        contentPanel.add(Box.createVerticalGlue());
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Кнопки
+        // Кнопка управления категориями
+        JButton categoriesButton = new JButton("Manage Categories...");
+        categoriesButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        categoriesButton.setBackground(ThemeColors.BUTTON);
+        categoriesButton.setForeground(ThemeColors.TEXT_PRIMARY);
+        categoriesButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
+                new EmptyBorder(10, 24, 10, 24)
+        ));
+        categoriesButton.setFocusPainted(false);
+        categoriesButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        categoriesButton.setContentAreaFilled(false);
+        categoriesButton.setOpaque(true);
+        categoriesButton.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        categoriesButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                categoriesButton.setBackground(ThemeColors.BUTTON_HOVER);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                categoriesButton.setBackground(ThemeColors.BUTTON);
+            }
+        });
+
+        categoriesButton.addActionListener(e -> {
+            CategoryManagerDialog.getInstance().showDialog();
+        });
+
+        mainPanel.add(categoriesButton);
+        mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
+
+        // Кнопки Cancel и Apply
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setBackground(ThemeColors.BACKGROUND);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -101,79 +128,12 @@ public class TimeSlotSettingsDialog extends JDialog {
         buttonPanel.add(cancelButton);
         buttonPanel.add(applyButton);
 
-        contentPanel.add(buttonPanel);
+        mainPanel.add(buttonPanel);
 
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        // Добавляем растягивающееся пространство внизу
+        mainPanel.add(Box.createVerticalGlue());
 
         add(mainPanel);
-    }
-
-    private JPanel createTitleBar() {
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(ThemeColors.TITLE_BAR);
-        titleBar.setPreferredSize(new Dimension(getWidth(), 35));
-
-        JLabel titleLabel = new JLabel("  Time Slot Settings");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
-
-        JButton closeButton = new JButton("X");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
-        closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-        closeButton.setPreferredSize(new Dimension(45, 35));
-        closeButton.setFocusPainted(false);
-        closeButton.setBorderPainted(false);
-        closeButton.setContentAreaFilled(false);
-        closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        closeButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.CLOSE_BUTTON_HOVER);
-                closeButton.setForeground(Color.WHITE);
-                closeButton.setContentAreaFilled(true);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.TITLE_BAR);
-                closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-                closeButton.setContentAreaFilled(false);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-            }
-        });
-
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private Point initialClick;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-
-                setLocation(thisX + xMoved, thisY + yMoved);
-            }
-        };
-
-        titleBar.addMouseListener(dragAdapter);
-        titleBar.addMouseMotionListener(dragAdapter);
-
-        titleBar.add(titleLabel, BorderLayout.WEST);
-        titleBar.add(closeButton, BorderLayout.EAST);
-
-        return titleBar;
     }
 
     private JPanel createTimeInputPanel(String labelText, String fieldName) {
@@ -269,19 +229,14 @@ public class TimeSlotSettingsDialog extends JDialog {
                 return;
             }
 
-            // Обновляем слоты в DataStorage
             DataStorage.getInstance().updateTimeSlots(startHour, endHour);
-
-            // Полностью перезагружаем слоты в TimeSlotDialog
             TimeSlotDialog.getInstance().reloadSlots();
 
             statusLabel.setText("Settings applied successfully!");
             statusLabel.setForeground(ThemeColors.CURRENT_SLOT);
 
-            // Обновляем текст текущих настроек
             currentSettingsLabel.setText(getCurrentSettingsText());
 
-            // Закрываем окно через 1.5 секунды
             Timer timer = new Timer(1500, e -> setVisible(false));
             timer.setRepeats(false);
             timer.start();
@@ -299,5 +254,4 @@ public class TimeSlotSettingsDialog extends JDialog {
         statusLabel.setText(" ");
         setVisible(true);
     }
-
 }

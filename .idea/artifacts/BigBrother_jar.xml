@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="BigBrother:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/BigBrother_jar</output-path>
+    <root id="archive" name="BigBrother.jar">
+      <element id="module-output" name="BigBrother" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/org/eclipse/jgit/org.eclipse.jgit/7.5.0.202512021534-r/org.eclipse.jgit-7.5.0.202512021534-r.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/com/googlecode/javaewah/JavaEWAH/1.2.3/JavaEWAH-1.2.3.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/commons-codec/commons-codec/1.20.0/commons-codec-1.20.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$USER_HOME$/.m2/repository/com/formdev/flatlaf/3.7.1/flatlaf-3.7.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

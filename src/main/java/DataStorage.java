@@ -1,16 +1,24 @@
 import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
 public class DataStorage {
     private static final Logger logger = Logger.getLogger(DataStorage.class.getName());
-    private static final String DATA_FILE = "timetracker_data.properties";
+    private static final String DATA_DIR = "data";
     private static final String CATEGORIES_FILE = "categories.properties";
+    private static final String SETTINGS_FILE = "timetracker_settings.properties";
 
     private List<TimeSlot> slots = new ArrayList<>();
     private List<String> categories = new ArrayList<>();
-    private Map<TimeSlot, String> data = new HashMap<>();
+    private Map<TimeSlot, String> todayData = new HashMap<>();
+    private Map<String, String> notificationSent = new HashMap<>();
+
+    private int startHour = 9;
+    private int endHour = 21;
+    private LocalDate currentDate;
 
     private static DataStorage instance = null;
 
@@ -22,30 +30,85 @@ public class DataStorage {
     }
 
     private DataStorage() {
+        createDataDirectory();
+        loadSettingsFromFile();
         initializeSlots();
         loadCategoriesFromFile();
-        loadFromFile();
+
+        // Загружаем данные за сегодня
+        currentDate = LocalDate.now();
+        loadTodayData();
+
+        logger.info("DataStorage initialized for date: " + currentDate);
+    }
+
+    private void createDataDirectory() {
+        File dataDir = new File(DATA_DIR);
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+            logger.info("Created data directory: " + dataDir.getAbsolutePath());
+        }
+    }
+
+    private String getTodayFileName() {
+        return DATA_DIR + "/" + currentDate.toString() + ".properties";
+    }
+
+    private String getFileNameForDate(LocalDate date) {
+        return DATA_DIR + "/" + date.toString() + ".properties";
+    }
+
+    private void loadSettingsFromFile() {
+        File file = new File(SETTINGS_FILE);
+        if (!file.exists()) {
+            startHour = 9;
+            endHour = 21;
+            saveSettingsToFile();
+            logger.info("Created default settings file");
+            return;
+        }
+
+        Properties props = new Properties();
+        try (FileInputStream in = new FileInputStream(file)) {
+            props.load(in);
+            startHour = Integer.parseInt(props.getProperty("startHour", "9"));
+            endHour = Integer.parseInt(props.getProperty("endHour", "21"));
+            logger.info("Settings loaded: " + startHour + ":00 - " + endHour + ":00");
+        } catch (IOException | NumberFormatException e) {
+            logger.warning("Failed to load settings: " + e.getMessage());
+            startHour = 9;
+            endHour = 21;
+        }
+    }
+
+    private void saveSettingsToFile() {
+        Properties props = new Properties();
+        props.setProperty("startHour", String.valueOf(startHour));
+        props.setProperty("endHour", String.valueOf(endHour));
+
+        try (FileOutputStream out = new FileOutputStream(SETTINGS_FILE)) {
+            props.store(out, "Time Tracker Settings");
+            logger.fine("Settings saved");
+        } catch (IOException e) {
+            logger.warning("Failed to save settings: " + e.getMessage());
+        }
     }
 
     private void initializeSlots() {
-        for (int hour = 9; hour < 21; hour++) {
+        slots.clear();
+        for (int hour = startHour; hour < endHour; hour++) {
             LocalTime start = LocalTime.of(hour, 0);
             LocalTime end = LocalTime.of(hour + 1, 0);
             slots.add(new TimeSlot(start, end));
         }
+        logger.info("Initialized " + slots.size() + " time slots");
     }
 
     private void loadCategoriesFromFile() {
         File file = new File(CATEGORIES_FILE);
 
-        // Если файла нет - создаём пустой
         if (!file.exists()) {
-            try {
-                file.createNewFile();
-                logger.info("Created empty categories file: " + CATEGORIES_FILE);
-            } catch (IOException e) {
-                logger.warning("Failed to create categories file: " + e.getMessage());
-            }
+            createDefaultCategoriesFile();
         }
 
         categories.clear();
@@ -54,19 +117,125 @@ public class DataStorage {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                // Пропускаем пустые строки и комментарии
                 if (!line.isEmpty() && !line.startsWith("#")) {
                     categories.add(line);
                 }
             }
-            logger.info("Loaded " + categories.size() + " categories from file");
+
+            if (categories.isEmpty()) {
+                addDefaultCategories();
+            }
+
+            logger.info("Loaded " + categories.size() + " categories");
         } catch (IOException e) {
             logger.warning("Failed to load categories: " + e.getMessage());
+            addDefaultCategories();
+        }
+    }
+
+    private void createDefaultCategoriesFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(CATEGORIES_FILE))) {
+            writer.println("# Categories for Time Tracker");
+            writer.println("doing homework");
+            writer.println("watching TV Shows");
+            writer.println("watching youtube");
+            writer.println("watching youtube shorts");
+            writer.println("listening music");
+            writer.println("having shower");
+            writer.println("doing activities");
+            writer.println("doing nothing");
+            writer.println("chatting in telegram");
+            logger.info("Created default categories file");
+        } catch (IOException e) {
+            logger.warning("Failed to create categories file: " + e.getMessage());
+        }
+    }
+
+    private void addDefaultCategories() {
+        categories.clear();
+        categories.add("doing homework");
+        categories.add("watching TV Shows");
+        categories.add("watching youtube");
+        categories.add("watching youtube shorts");
+        categories.add("listening music");
+        categories.add("having shower");
+        categories.add("doing activities");
+        categories.add("doing nothing");
+        categories.add("chatting in telegram");
+        saveCategoriesToFile();
+        logger.info("Added default categories");
+    }
+
+    private void saveCategoriesToFile() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(CATEGORIES_FILE))) {
+            for (String category : categories) {
+                writer.println(category);
+            }
+            logger.fine("Categories saved to file");
+        } catch (IOException e) {
+            logger.warning("Failed to save categories: " + e.getMessage());
+        }
+    }
+
+    private void loadTodayData() {
+        File file = new File(getTodayFileName());
+        todayData.clear();
+
+        if (!file.exists()) {
+            logger.info("No data file for today, starting fresh");
+            return;
+        }
+
+        Properties props = new Properties();
+        try (FileInputStream in = new FileInputStream(file)) {
+            props.load(in);
+
+            for (String key : props.stringPropertyNames()) {
+                try {
+                    TimeSlot slot = TimeSlot.fromString(key);
+                    String category = props.getProperty(key);
+                    if (!category.isEmpty()) {
+                        todayData.put(slot, category);
+                    }
+                } catch (Exception e) {
+                    logger.warning("Failed to parse slot: " + key);
+                }
+            }
+            logger.info("Loaded " + todayData.size() + " entries for today");
+        } catch (IOException e) {
+            logger.warning("Failed to load today's data: " + e.getMessage());
+        }
+    }
+
+    private void saveTodayData() {
+        Properties props = new Properties();
+        for (Map.Entry<TimeSlot, String> entry : todayData.entrySet()) {
+            if (!entry.getValue().isEmpty()) {
+                props.setProperty(entry.getKey().toString(), entry.getValue());
+            }
+        }
+
+        try (FileOutputStream out = new FileOutputStream(getTodayFileName())) {
+            props.store(out, "Time Tracker - " + currentDate);
+            logger.fine("Today's data saved to: " + getTodayFileName());
+        } catch (IOException e) {
+            logger.warning("Failed to save today's data: " + e.getMessage());
+        }
+    }
+
+    public void checkAndReloadIfNewDay() {
+        LocalDate today = LocalDate.now();
+        if (!today.equals(currentDate)) {
+            logger.info("New day detected! Switching from " + currentDate + " to " + today);
+            currentDate = today;
+            todayData.clear();
+            notificationSent.clear();
+            loadTodayData();
         }
     }
 
     public String getCategory(TimeSlot slot) {
-        return data.getOrDefault(slot, "");
+        return todayData.getOrDefault(slot, "");
     }
 
     public String getCategory(String slotString) {
@@ -75,8 +244,9 @@ public class DataStorage {
     }
 
     public void setCategory(TimeSlot slot, String category) {
-        data.put(slot, category);
-        saveToFile();
+        checkAndReloadIfNewDay();
+        todayData.put(slot, category);
+        saveTodayData();
         logger.fine("Category set: " + slot + " -> " + category);
     }
 
@@ -116,17 +286,6 @@ public class DataStorage {
         }
     }
 
-    private void saveCategoriesToFile() {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(CATEGORIES_FILE))) {
-            for (String category : categories) {
-                writer.println(category);
-            }
-            logger.fine("Categories saved to file");
-        } catch (IOException e) {
-            logger.warning("Failed to save categories: " + e.getMessage());
-        }
-    }
-
     public void reloadCategories() {
         loadCategoriesFromFile();
         logger.info("Categories reloaded from file");
@@ -141,7 +300,109 @@ public class DataStorage {
         return null;
     }
 
-    private void saveToFile() {
+    public int getStartHour() {
+        return startHour;
+    }
+
+    public int getEndHour() {
+        return endHour;
+    }
+
+    public void updateTimeSlots(int newStartHour, int newEndHour) {
+        this.startHour = newStartHour;
+        this.endHour = newEndHour;
+        saveSettingsToFile();
+
+        Map<String, String> oldData = new HashMap<>();
+        for (Map.Entry<TimeSlot, String> entry : todayData.entrySet()) {
+            oldData.put(entry.getKey().toString(), entry.getValue());
+        }
+
+        slots.clear();
+        todayData.clear();
+
+        for (int hour = startHour; hour < endHour; hour++) {
+            LocalTime start = LocalTime.of(hour, 0);
+            LocalTime end = LocalTime.of(hour + 1, 0);
+            TimeSlot newSlot = new TimeSlot(start, end);
+            slots.add(newSlot);
+
+            String category = oldData.get(newSlot.toString());
+            if (category != null && !category.isEmpty()) {
+                todayData.put(newSlot, category);
+            }
+        }
+
+        saveTodayData();
+        logger.info("Time slots updated: " + startHour + ":00 - " + endHour + ":00");
+    }
+
+    public String getLastNotificationForSlot(String slotString) {
+        return notificationSent.get(slotString);
+    }
+
+    public void setLastNotificationForSlot(String slotString, String status) {
+        notificationSent.put(slotString, status);
+    }
+
+    // Методы для статистики (будут использоваться позже)
+    public List<LocalDate> getAvailableDates() {
+        List<LocalDate> dates = new ArrayList<>();
+        File dataDir = new File(DATA_DIR);
+        File[] files = dataDir.listFiles((dir, name) -> name.endsWith(".properties"));
+
+        if (files != null) {
+            for (File file : files) {
+                String name = file.getName().replace(".properties", "");
+                try {
+                    dates.add(LocalDate.parse(name));
+                } catch (Exception e) {
+                    // Пропускаем файлы с неправильным именем
+                }
+            }
+        }
+        dates.sort(Collections.reverseOrder());
+        return dates;
+    }
+
+    public Map<TimeSlot, String> getDataForDate(LocalDate date) {
+        Map<TimeSlot, String> result = new HashMap<>();
+        File file = new File(getFileNameForDate(date));
+
+        if (!file.exists()) {
+            return result;
+        }
+
+        Properties props = new Properties();
+        try (FileInputStream in = new FileInputStream(file)) {
+            props.load(in);
+            for (String key : props.stringPropertyNames()) {
+                try {
+                    TimeSlot slot = TimeSlot.fromString(key);
+                    result.put(slot, props.getProperty(key));
+                } catch (Exception e) {
+                    // Пропускаем
+                }
+            }
+        } catch (IOException e) {
+            logger.warning("Failed to load data for date " + date);
+        }
+        return result;
+    }
+    // Методы для работы с историей
+    public void setCategoryForDate(LocalDate date, TimeSlot slot, String category) {
+        Map<TimeSlot, String> dayData = getDataForDate(date);
+        dayData.put(slot, category);
+        saveDataForDate(date, dayData);
+        logger.info("Category set for " + date + ": " + slot + " -> " + category);
+    }
+
+    public void setCategoryForDate(LocalDate date, String slotString, String category) {
+        TimeSlot slot = TimeSlot.fromString(slotString);
+        setCategoryForDate(date, slot, category);
+    }
+
+    private void saveDataForDate(LocalDate date, Map<TimeSlot, String> data) {
         Properties props = new Properties();
         for (Map.Entry<TimeSlot, String> entry : data.entrySet()) {
             if (!entry.getValue().isEmpty()) {
@@ -149,84 +410,11 @@ public class DataStorage {
             }
         }
 
-        try (FileOutputStream out = new FileOutputStream(DATA_FILE)) {
-            props.store(out, "Time Tracker Data");
-            logger.fine("Data saved to file");
+        try (FileOutputStream out = new FileOutputStream(getFileNameForDate(date))) {
+            props.store(out, "Time Tracker - " + date);
+            logger.fine("Data saved for date: " + date);
         } catch (IOException e) {
-            logger.warning("Failed to save data: " + e.getMessage());
+            logger.warning("Failed to save data for date " + date + ": " + e.getMessage());
         }
-    }
-
-    private void loadFromFile() {
-        File file = new File(DATA_FILE);
-        if (!file.exists()) {
-            logger.info("No saved data file found");
-            return;
-        }
-
-        Properties props = new Properties();
-        try (FileInputStream in = new FileInputStream(file)) {
-            props.load(in);
-
-            for (String key : props.stringPropertyNames()) {
-                try {
-                    TimeSlot slot = TimeSlot.fromString(key);
-                    String category = props.getProperty(key);
-                    data.put(slot, category);
-                } catch (Exception e) {
-                    logger.warning("Failed to parse slot: " + key);
-                }
-            }
-            logger.info("Data loaded from file");
-        } catch (IOException e) {
-            logger.warning("Failed to load data: " + e.getMessage());
-        }
-    }
-
-    public void clearAllData() {
-        data.clear();
-        File file = new File(DATA_FILE);
-        if (file.exists()) {
-            file.delete();
-        }
-        logger.info("All data cleared");
-    }
-    public int getStartHour() {
-        if (slots.isEmpty()) return 9;
-        return slots.get(0).getStartHour();
-    }
-
-    public int getEndHour() {
-        if (slots.isEmpty()) return 21;
-        return slots.get(slots.size() - 1).getEndHour();
-    }
-
-    public void updateTimeSlots(int startHour, int endHour) {
-        // Сохраняем старые данные
-        Map<String, String> oldData = new HashMap<>();
-        for (Map.Entry<TimeSlot, String> entry : data.entrySet()) {
-            oldData.put(entry.getKey().toString(), entry.getValue());
-        }
-
-        // Очищаем слоты
-        slots.clear();
-        data.clear();
-
-        // Создаём новые слоты
-        for (int hour = startHour; hour < endHour; hour++) {
-            LocalTime start = LocalTime.of(hour, 0);
-            LocalTime end = LocalTime.of(hour + 1, 0);
-            TimeSlot newSlot = new TimeSlot(start, end);
-            slots.add(newSlot);
-
-            // Восстанавливаем данные, если такая категория была
-            String category = oldData.get(newSlot.toString());
-            if (category != null && !category.isEmpty()) {
-                data.put(newSlot, category);
-            }
-        }
-
-        saveToFile();
-        logger.info("Time slots updated: " + startHour + ":00 - " + endHour + ":00");
     }
 }

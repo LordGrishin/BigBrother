@@ -23,7 +23,6 @@ public class CategoryManagerDialog extends JDialog {
         setSize(450, 500);
         setMinimumSize(new Dimension(400, 400));
         setLocationRelativeTo(null);
-        setUndecorated(true);
 
         initComponents();
         setVisible(false);
@@ -32,20 +31,14 @@ public class CategoryManagerDialog extends JDialog {
     private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(ThemeColors.BACKGROUND);
-
-        JPanel titleBar = createTitleBar();
-        mainPanel.add(titleBar, BorderLayout.NORTH);
-
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(ThemeColors.BACKGROUND);
-        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Заголовок
         JLabel titleLabel = new JLabel("Manage Categories");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
         titleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
-        contentPanel.add(titleLabel, BorderLayout.NORTH);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         // Панель с категориями
         categoriesPanel = new JPanel();
@@ -55,13 +48,13 @@ public class CategoryManagerDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(categoriesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         scrollPane.setBackground(ThemeColors.BACKGROUND);
         scrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
         scrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
 
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Панель для добавления новой категории
         JPanel addPanel = new JPanel(new BorderLayout(10, 0));
@@ -84,10 +77,8 @@ public class CategoryManagerDialog extends JDialog {
         addPanel.add(newCategoryField, BorderLayout.CENTER);
         addPanel.add(addButton, BorderLayout.EAST);
 
-        contentPanel.add(addPanel, BorderLayout.SOUTH);
-
         // Кнопки внизу
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
 
         JButton reloadButton = createButton("Reload", ThemeColors.BUTTON);
@@ -104,80 +95,10 @@ public class CategoryManagerDialog extends JDialog {
         southPanel.add(addPanel, BorderLayout.NORTH);
         southPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        contentPanel.add(southPanel, BorderLayout.SOUTH);
-
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        mainPanel.add(southPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
         loadCategories();
-    }
-
-    private JPanel createTitleBar() {
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(ThemeColors.TITLE_BAR);
-        titleBar.setPreferredSize(new Dimension(getWidth(), 35));
-
-        JLabel titleLabel = new JLabel("  Category Manager");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
-
-        JButton closeButton = new JButton("X");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
-        closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-        closeButton.setPreferredSize(new Dimension(45, 35));
-        closeButton.setFocusPainted(false);
-        closeButton.setBorderPainted(false);
-        closeButton.setContentAreaFilled(false);
-        closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        closeButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.CLOSE_BUTTON_HOVER);
-                closeButton.setForeground(Color.WHITE);
-                closeButton.setContentAreaFilled(true);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.TITLE_BAR);
-                closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-                closeButton.setContentAreaFilled(false);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-            }
-        });
-
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private Point initialClick;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-
-                setLocation(thisX + xMoved, thisY + yMoved);
-            }
-        };
-
-        titleBar.addMouseListener(dragAdapter);
-        titleBar.addMouseMotionListener(dragAdapter);
-
-        titleBar.add(titleLabel, BorderLayout.WEST);
-        titleBar.add(closeButton, BorderLayout.EAST);
-
-        return titleBar;
     }
 
     private JButton createButton(String text, Color bgColor) {

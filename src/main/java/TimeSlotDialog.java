@@ -3,6 +3,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,13 +34,11 @@ public class TimeSlotDialog extends JFrame {
         positionWindowLeftOfCenter();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        setUndecorated(true);
 
-        initComponents();
         addWindowListener(new TimeSlotDialogAdapter());
 
+        initComponents();
         startAutoUpdateTimer();
-
         refreshTable();
         setVisible(true);
 
@@ -50,14 +49,33 @@ public class TimeSlotDialog extends JFrame {
         updateTimer = new Timer(60000, e -> {
             refreshTable();
             updateTimeLabel();
+            checkSlotEnding();
         });
         updateTimer.start();
     }
 
     private void setApplicationIcon() {
         try {
-            Image icon = Toolkit.getDefaultToolkit().getImage("src/main/resources/eye.jpg");
-            setIconImage(icon);
+            Image icon = null;
+
+            // Сначала пробуем загрузить из файла рядом с JAR
+            File iconFile = new File("eye.jpg");
+            if (iconFile.exists()) {
+                icon = Toolkit.getDefaultToolkit().getImage(iconFile.getAbsolutePath());
+            } else {
+                // Если нет - пробуем из ресурсов
+                java.net.URL imgURL = getClass().getClassLoader().getResource("eye.jpg");
+                if (imgURL != null) {
+                    icon = Toolkit.getDefaultToolkit().getImage(imgURL);
+                } else {
+                    logger.warning("Icon not found, using default");
+                    return;
+                }
+            }
+
+            if (icon != null) {
+                setIconImage(icon);
+            }
         } catch (Exception e) {
             logger.warning("Could not load application icon: " + e.getMessage());
         }
@@ -73,17 +91,13 @@ public class TimeSlotDialog extends JFrame {
     private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(ThemeColors.BACKGROUND);
+        mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        JPanel titleBar = createTitleBar();
-        mainPanel.add(titleBar, BorderLayout.NORTH);
-
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(ThemeColors.BACKGROUND);
-        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
-
+        // Заголовок
         JPanel headerPanel = createHeaderPanel();
-        contentPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
 
+        // Панель со слотами
         slotsPanel = new JPanel();
         slotsPanel.setLayout(new BoxLayout(slotsPanel, BoxLayout.Y_AXIS));
         slotsPanel.setBackground(ThemeColors.BACKGROUND);
@@ -91,134 +105,21 @@ public class TimeSlotDialog extends JFrame {
         JScrollPane scrollPane = new JScrollPane(slotsPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         scrollPane.setBackground(ThemeColors.BACKGROUND);
         scrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
 
         scrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
+        // Кнопки внизу
         JPanel bottomPanel = createBottomPanel();
-        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
         loadSlots();
-    }
-
-    private JPanel createTitleBar() {
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(ThemeColors.TITLE_BAR);
-        titleBar.setPreferredSize(new Dimension(getWidth(), 35));
-
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
-        leftPanel.setOpaque(false);
-        leftPanel.setBorder(new EmptyBorder(0, 10, 0, 0));
-
-        try {
-            Image icon = Toolkit.getDefaultToolkit().getImage("src/main/resources/eye.jpg");
-            Image scaledIcon = icon.getScaledInstance(20, 20, Image.SCALE_SMOOTH);
-            JLabel iconLabel = new JLabel(new ImageIcon(scaledIcon));
-            iconLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
-            leftPanel.add(iconLabel);
-            leftPanel.add(Box.createRigidArea(new Dimension(8, 0)));
-        } catch (Exception e) {
-            // Icon not found, continue without it
-        }
-
-        JLabel titleLabel = new JLabel("Time Tracker");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
-        titleLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
-        leftPanel.add(titleLabel);
-
-        JButton closeButton = createCloseButton();
-
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setOpaque(false);
-        rightPanel.add(Box.createVerticalGlue());
-
-        JPanel closeButtonWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        closeButtonWrapper.setOpaque(false);
-        closeButtonWrapper.setMaximumSize(new Dimension(45, 35));
-        closeButtonWrapper.add(closeButton);
-
-        rightPanel.add(closeButtonWrapper);
-        rightPanel.add(Box.createVerticalGlue());
-
-        addDragListener(titleBar);
-
-        titleBar.add(leftPanel, BorderLayout.WEST);
-        titleBar.add(rightPanel, BorderLayout.EAST);
-
-        return titleBar;
-    }
-
-    private JButton createCloseButton() {
-        JButton closeButton = new JButton("X");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
-        closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-        closeButton.setPreferredSize(new Dimension(45, 35));
-        closeButton.setMaximumSize(new Dimension(45, 35));
-        closeButton.setFocusPainted(false);
-        closeButton.setBorderPainted(false);
-        closeButton.setContentAreaFilled(false);
-        closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        closeButton.setAlignmentY(Component.CENTER_ALIGNMENT);
-
-        closeButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.CLOSE_BUTTON_HOVER);
-                closeButton.setForeground(Color.WHITE);
-                closeButton.setContentAreaFilled(true);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.TITLE_BAR);
-                closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-                closeButton.setContentAreaFilled(false);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-                SystemTrayApp.getInstance();
-            }
-        });
-
-        return closeButton;
-    }
-
-    private void addDragListener(JPanel titleBar) {
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private Point initialClick;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-
-                setLocation(thisX + xMoved, thisY + yMoved);
-            }
-        };
-
-        titleBar.addMouseListener(dragAdapter);
-        titleBar.addMouseMotionListener(dragAdapter);
     }
 
     private JPanel createHeaderPanel() {
@@ -250,15 +151,18 @@ public class TimeSlotDialog extends JFrame {
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        // Левая часть - кнопки Categories и Settings
+        // Левая часть - кнопки History, Settings, Statistics
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         leftPanel.setOpaque(false);
 
-        JButton categoriesButton = createCategoriesButton();
-        leftPanel.add(categoriesButton);
+        JButton historyButton = createHistoryButton();
+        leftPanel.add(historyButton);
 
         JButton settingsButton = createSettingsButton();
         leftPanel.add(settingsButton);
+
+        JButton statisticsButton = createStatisticsButton();
+        leftPanel.add(statisticsButton);
 
         // Правая часть - кнопка Hide to Tray
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
@@ -272,6 +176,80 @@ public class TimeSlotDialog extends JFrame {
 
         return bottomPanel;
     }
+
+    private JButton createHistoryButton() {
+        JButton historyButton = new JButton("History");
+        historyButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        historyButton.setBackground(ThemeColors.BUTTON);
+        historyButton.setForeground(ThemeColors.TEXT_SECONDARY);
+        historyButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
+                new EmptyBorder(8, 16, 8, 16)
+        ));
+        historyButton.setFocusPainted(false);
+        historyButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        historyButton.setContentAreaFilled(false);
+        historyButton.setOpaque(true);
+        historyButton.setToolTipText("View and edit history");
+
+        historyButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                historyButton.setBackground(ThemeColors.BUTTON_HOVER);
+                historyButton.setForeground(ThemeColors.TEXT_PRIMARY);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                historyButton.setBackground(ThemeColors.BUTTON);
+                historyButton.setForeground(ThemeColors.TEXT_SECONDARY);
+            }
+        });
+
+        historyButton.addActionListener(e -> {
+            HistoryDialog.getInstance().showDialog();
+        });
+
+        return historyButton;
+    }
+
+    private JButton createStatisticsButton() {
+        JButton statisticsButton = new JButton("Statistics");
+        statisticsButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        statisticsButton.setBackground(ThemeColors.BUTTON);
+        statisticsButton.setForeground(ThemeColors.TEXT_SECONDARY);
+        statisticsButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
+                new EmptyBorder(8, 16, 8, 16)
+        ));
+        statisticsButton.setFocusPainted(false);
+        statisticsButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        statisticsButton.setContentAreaFilled(false);
+        statisticsButton.setOpaque(true);
+        statisticsButton.setToolTipText("View statistics");
+
+        statisticsButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                statisticsButton.setBackground(ThemeColors.BUTTON_HOVER);
+                statisticsButton.setForeground(ThemeColors.TEXT_PRIMARY);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                statisticsButton.setBackground(ThemeColors.BUTTON);
+                statisticsButton.setForeground(ThemeColors.TEXT_SECONDARY);
+            }
+        });
+
+        statisticsButton.addActionListener(e -> {
+            // Открываем окно статистики
+            StatisticsDialog.getInstance().showDialog();
+        });
+
+        return statisticsButton;
+    }
+
 
     private JButton createSettingsButton() {
         JButton settingsButton = new JButton("Settings");
@@ -307,42 +285,6 @@ public class TimeSlotDialog extends JFrame {
         });
 
         return settingsButton;
-    }
-
-    private JButton createCategoriesButton() {
-        JButton categoriesButton = new JButton("Categories");
-        categoriesButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        categoriesButton.setBackground(ThemeColors.BUTTON);
-        categoriesButton.setForeground(ThemeColors.TEXT_SECONDARY);
-        categoriesButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(ThemeColors.BORDER, 1, true),
-                new EmptyBorder(8, 16, 8, 16)
-        ));
-        categoriesButton.setFocusPainted(false);
-        categoriesButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        categoriesButton.setContentAreaFilled(false);
-        categoriesButton.setOpaque(true);
-        categoriesButton.setToolTipText("Manage Categories");
-
-        categoriesButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                categoriesButton.setBackground(ThemeColors.BUTTON_HOVER);
-                categoriesButton.setForeground(ThemeColors.TEXT_PRIMARY);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                categoriesButton.setBackground(ThemeColors.BUTTON);
-                categoriesButton.setForeground(ThemeColors.TEXT_SECONDARY);
-            }
-        });
-
-        categoriesButton.addActionListener(e -> {
-            CategoryManagerDialog.getInstance().showDialog();
-        });
-
-        return categoriesButton;
     }
 
     private JButton createHideButton() {
@@ -397,7 +339,6 @@ public class TimeSlotDialog extends JFrame {
         slotsPanel.revalidate();
         slotsPanel.repaint();
 
-        // Обновляем размер окна в зависимости от количества слотов
         updateWindowSize();
     }
 
@@ -411,13 +352,10 @@ public class TimeSlotDialog extends JFrame {
         DataStorage table = DataStorage.getInstance();
         List<TimeSlot> slots = table.getSlots();
 
-        // Проверяем, изменилось ли количество слотов
         if (slotList == null || slotList.length != slots.size()) {
-            // Если количество изменилось - полностью перезагружаем слоты
             loadSlots();
         }
 
-        // Обновляем отображение для существующих слотов
         for (int i = 0; i < slots.size() && i < slotList.length; i++) {
             TimeSlot timeSlot = slots.get(i);
             slotList[i].setSlotCategory(table.getCategory(timeSlot));
@@ -431,6 +369,7 @@ public class TimeSlotDialog extends JFrame {
         revalidate();
         repaint();
     }
+
     public void reloadSlots() {
         loadSlots();
         refreshTable();
@@ -442,5 +381,36 @@ public class TimeSlotDialog extends JFrame {
             updateTimer.stop();
         }
         super.dispose();
+    }
+    private void checkSlotEnding() {
+        DataStorage table = DataStorage.getInstance();
+        TimeSlot currentSlot = table.getCurrentSlot();
+
+        if (currentSlot != null) {
+            LocalTime now = LocalTime.now();
+            LocalTime slotEnd = currentSlot.getEndTime();
+
+            // Проверяем, осталось ли 5 минут до конца слота
+            if (now.plusMinutes(5).isAfter(slotEnd) && now.isBefore(slotEnd)) {
+                // Проверяем, не показывали ли уже уведомление для этого слота
+                String lastNotification = table.getLastNotificationForSlot(currentSlot.toString());
+                if (lastNotification == null) {
+                    showSlotEndingNotification(currentSlot);
+                    table.setLastNotificationForSlot(currentSlot.toString(), "sent");
+                }
+            }
+        }
+    }
+    private void showSlotEndingNotification(TimeSlot slot) {
+        String category = DataStorage.getInstance().getCategory(slot);
+        String message;
+
+        if (category != null && !category.isEmpty()) {
+            message = "Current slot ends in 5 minutes!\nYou were: " + category;
+        } else {
+            message = "Current slot ends in 5 minutes!\nDon't forget to log your activity!";
+        }
+
+        SystemTrayApp.getInstance().showNotification("Time Tracker", message);
     }
 }

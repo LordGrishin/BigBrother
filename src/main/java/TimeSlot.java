@@ -20,7 +20,7 @@ public class TimeSlot {
 
     public boolean isCurrent() {
         LocalTime now = LocalTime.now();
-        return now.isAfter(startTime) && now.isBefore(endTime);
+        return !now.isBefore(startTime) && now.isBefore(endTime);
     }
 
     public LocalTime getStartTime() {

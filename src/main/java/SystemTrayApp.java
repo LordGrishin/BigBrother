@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.logging.Logger;
 
 public class SystemTrayApp {
@@ -23,7 +24,19 @@ public class SystemTrayApp {
 
         SystemTray systemTray = SystemTray.getSystemTray();
 
-        Image image = Toolkit.getDefaultToolkit().getImage("src/main/resources/eye.jpg");
+        Image image = null;
+
+        // Сначала пробуем загрузить из файла рядом с JAR
+        File iconFile = new File("eye.jpg");
+        if (iconFile.exists()) {
+            image = Toolkit.getDefaultToolkit().getImage(iconFile.getAbsolutePath());
+        } else {
+            // Если нет - пробуем из ресурсов
+            java.net.URL imgURL = getClass().getClassLoader().getResource("eye.jpg");
+            if (imgURL != null) {
+                image = Toolkit.getDefaultToolkit().getImage(imgURL);
+            }
+        }
 
         PopupMenu trayPopupMenu = new PopupMenu();
 

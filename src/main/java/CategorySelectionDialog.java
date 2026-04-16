@@ -3,8 +3,11 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 public class CategorySelectionDialog extends JDialog {
@@ -15,6 +18,11 @@ public class CategorySelectionDialog extends JDialog {
     private JPanel categoriesPanel;
     private List<CategoryButton> categoryButtons;
     private JScrollPane scrollPane;
+
+    // Поля для режима истории
+    private LocalDate historyDate = null;
+    private TimeSlot historySlot = null;
+    private Consumer<String> historyCallback = null;
 
     public static CategorySelectionDialog getInstance() {
         if (instance == null) {
@@ -31,7 +39,6 @@ public class CategorySelectionDialog extends JDialog {
         positionWindowRightOfCenter();
 
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        setUndecorated(true);
 
         initComponents();
 
@@ -49,19 +56,13 @@ public class CategorySelectionDialog extends JDialog {
     private void initComponents() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(ThemeColors.BACKGROUND);
-
-        JPanel titleBar = createTitleBar();
-        mainPanel.add(titleBar, BorderLayout.NORTH);
-
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBackground(ThemeColors.BACKGROUND);
-        contentPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("What were you working on?");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         titleLabel.setForeground(ThemeColors.TEXT_SECONDARY);
         titleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
-        contentPanel.add(titleLabel, BorderLayout.NORTH);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         categoriesPanel = new JPanel();
         categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS));
@@ -70,14 +71,14 @@ public class CategorySelectionDialog extends JDialog {
         scrollPane = new JScrollPane(categoriesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(30);
         scrollPane.setBackground(ThemeColors.BACKGROUND);
         scrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
 
         scrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
-        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
@@ -85,80 +86,10 @@ public class CategorySelectionDialog extends JDialog {
 
         JButton cancelButton = createCancelButton();
         bottomPanel.add(cancelButton);
-        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
         loadCategories();
-    }
-
-    private JPanel createTitleBar() {
-        JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(ThemeColors.TITLE_BAR);
-        titleBar.setPreferredSize(new Dimension(getWidth(), 35));
-
-        JLabel titleLabel = new JLabel("  Select Category");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
-
-        JButton closeButton = new JButton("X");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
-        closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-        closeButton.setPreferredSize(new Dimension(45, 35));
-        closeButton.setFocusPainted(false);
-        closeButton.setBorderPainted(false);
-        closeButton.setContentAreaFilled(false);
-        closeButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        closeButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.CLOSE_BUTTON_HOVER);
-                closeButton.setForeground(Color.WHITE);
-                closeButton.setContentAreaFilled(true);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                closeButton.setBackground(ThemeColors.TITLE_BAR);
-                closeButton.setForeground(ThemeColors.TEXT_SECONDARY);
-                closeButton.setContentAreaFilled(false);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                setVisible(false);
-            }
-        });
-
-        MouseAdapter dragAdapter = new MouseAdapter() {
-            private Point initialClick;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                initialClick = e.getPoint();
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int thisX = getLocation().x;
-                int thisY = getLocation().y;
-
-                int xMoved = e.getX() - initialClick.x;
-                int yMoved = e.getY() - initialClick.y;
-
-                setLocation(thisX + xMoved, thisY + yMoved);
-            }
-        };
-
-        titleBar.addMouseListener(dragAdapter);
-        titleBar.addMouseMotionListener(dragAdapter);
-
-        titleBar.add(titleLabel, BorderLayout.WEST);
-        titleBar.add(closeButton, BorderLayout.EAST);
-
-        return titleBar;
     }
 
     private JButton createCancelButton() {
@@ -187,7 +118,10 @@ public class CategorySelectionDialog extends JDialog {
             }
         });
 
-        cancelButton.addActionListener(e -> setVisible(false));
+        cancelButton.addActionListener(e -> {
+            clearHistoryMode();
+            setVisible(false);
+        });
 
         return cancelButton;
     }
@@ -201,7 +135,7 @@ public class CategorySelectionDialog extends JDialog {
 
         for (String category : categories) {
             CategoryButton button = new CategoryButton(category);
-            button.addActionListener(CategorySelectionListener.getInstance());
+            button.addActionListener(e -> selectCategoryAction(button.getCategory()));
 
             categoryButtons.add(button);
             categoriesPanel.add(button);
@@ -212,9 +146,41 @@ public class CategorySelectionDialog extends JDialog {
         categoriesPanel.repaint();
     }
 
+    private void selectCategoryAction(String category) {
+        if (historyDate != null && historySlot != null && historyCallback != null) {
+            // РЕЖИМ ИСТОРИИ - сохраняем в выбранную дату
+            logger.info("History mode: Setting category '" + category + "' for date " + historyDate + ", slot " + historySlot);
+            DataStorage.getInstance().setCategoryForDate(historyDate, historySlot, category);
+            historyCallback.accept(category);
+            clearHistoryMode();
+        } else {
+            // ОБЫЧНЫЙ РЕЖИМ - сохраняем в сегодня
+            logger.info("Normal mode: Setting category '" + category + "' for slot " + currentSlot);
+            DataStorage.getInstance().setCategory(currentSlot, category);
+            TimeSlotDialog.getInstance().refreshTable();
+        }
+        setVisible(false);
+    }
+
+    private void clearHistoryMode() {
+        historyDate = null;
+        historySlot = null;
+        historyCallback = null;
+        currentSlot = null;
+    }
+
     void refreshList(String slot) {
         currentSlot = slot;
-        String selectedCategory = DataStorage.getInstance().getCategory(slot);
+        String selectedCategory;
+
+        if (historyDate != null) {
+            // В режиме истории - получаем категорию за выбранную дату
+            Map<TimeSlot, String> dayData = DataStorage.getInstance().getDataForDate(historyDate);
+            selectedCategory = dayData.getOrDefault(historySlot, "");
+        } else {
+            // В обычном режиме - за сегодня
+            selectedCategory = DataStorage.getInstance().getCategory(slot);
+        }
 
         for (CategoryButton button : categoryButtons) {
             button.setSelected(button.getCategory().equals(selectedCategory));
@@ -222,6 +188,7 @@ public class CategorySelectionDialog extends JDialog {
     }
 
     void selectCategory(String slot) {
+        clearHistoryMode();
         currentSlot = slot;
         refreshList(slot);
         loadCategories();
@@ -229,10 +196,24 @@ public class CategorySelectionDialog extends JDialog {
         setVisible(true);
     }
 
+    public void selectCategoryForHistory(LocalDate date, TimeSlot slot, Consumer<String> callback) {
+        this.historyDate = date;
+        this.historySlot = slot;
+        this.historyCallback = callback;
+        this.currentSlot = slot.toString();
+
+        logger.info("Opening category selection for history: date=" + date + ", slot=" + slot);
+
+        loadCategories();
+        refreshList(slot.toString());
+        setVisible(true);
+    }
+
     public String getCurrentSlot() {
         return currentSlot;
     }
 
+    // Кастомная кнопка для категорий
     private class CategoryButton extends JPanel {
         private final String category;
         private boolean isSelected = false;
