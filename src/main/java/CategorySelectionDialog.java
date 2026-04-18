@@ -1,25 +1,19 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 public class CategorySelectionDialog extends JDialog {
-    private static final Logger logger = Logger.getLogger(CategorySelectionDialog.class.getName());
 
     private static CategorySelectionDialog instance = null;
     private String currentSlot;
     private JPanel categoriesPanel;
     private List<CategoryButton> categoryButtons;
-    private JScrollPane scrollPane;
 
-    // Поля для режима истории
     private LocalDate historyDate = null;
     private TimeSlot historySlot = null;
     private Consumer<String> historyCallback = null;
@@ -35,15 +29,10 @@ public class CategorySelectionDialog extends JDialog {
         super((Frame) null, "Select Category", true);
         setSize(400, 500);
         setMinimumSize(new Dimension(350, 400));
-
         positionWindowRightOfCenter();
-
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-
         initComponents();
-
         setVisible(false);
-        logger.info("CategorySelectionDialog initialized");
     }
 
     private void positionWindowRightOfCenter() {
@@ -68,13 +57,12 @@ public class CategorySelectionDialog extends JDialog {
         categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS));
         categoriesPanel.setBackground(ThemeColors.BACKGROUND);
 
-        scrollPane = new JScrollPane(categoriesPanel);
+        JScrollPane scrollPane = new JScrollPane(categoriesPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(30);
         scrollPane.setBackground(ThemeColors.BACKGROUND);
         scrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
-
         scrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
@@ -136,7 +124,6 @@ public class CategorySelectionDialog extends JDialog {
         for (String category : categories) {
             CategoryButton button = new CategoryButton(category);
             button.addActionListener(e -> selectCategoryAction(button.getCategory()));
-
             categoryButtons.add(button);
             categoriesPanel.add(button);
             categoriesPanel.add(Box.createRigidArea(new Dimension(0, 8)));
@@ -148,14 +135,10 @@ public class CategorySelectionDialog extends JDialog {
 
     private void selectCategoryAction(String category) {
         if (historyDate != null && historySlot != null && historyCallback != null) {
-            // РЕЖИМ ИСТОРИИ - сохраняем в выбранную дату
-            logger.info("History mode: Setting category '" + category + "' for date " + historyDate + ", slot " + historySlot);
             DataStorage.getInstance().setCategoryForDate(historyDate, historySlot, category);
             historyCallback.accept(category);
             clearHistoryMode();
         } else {
-            // ОБЫЧНЫЙ РЕЖИМ - сохраняем в сегодня
-            logger.info("Normal mode: Setting category '" + category + "' for slot " + currentSlot);
             DataStorage.getInstance().setCategory(currentSlot, category);
             TimeSlotDialog.getInstance().refreshTable();
         }
@@ -174,11 +157,9 @@ public class CategorySelectionDialog extends JDialog {
         String selectedCategory;
 
         if (historyDate != null) {
-            // В режиме истории - получаем категорию за выбранную дату
             Map<TimeSlot, String> dayData = DataStorage.getInstance().getDataForDate(historyDate);
             selectedCategory = dayData.getOrDefault(historySlot, "");
         } else {
-            // В обычном режиме - за сегодня
             selectedCategory = DataStorage.getInstance().getCategory(slot);
         }
 
@@ -201,9 +182,6 @@ public class CategorySelectionDialog extends JDialog {
         this.historySlot = slot;
         this.historyCallback = callback;
         this.currentSlot = slot.toString();
-
-        logger.info("Opening category selection for history: date=" + date + ", slot=" + slot);
-
         loadCategories();
         refreshList(slot.toString());
         setVisible(true);
@@ -213,13 +191,12 @@ public class CategorySelectionDialog extends JDialog {
         return currentSlot;
     }
 
-    // Кастомная кнопка для категорий
     private class CategoryButton extends JPanel {
         private final String category;
         private boolean isSelected = false;
         private boolean isHovered = false;
         private JLabel label;
-        private java.awt.event.ActionListener actionListener;
+        private ActionListener actionListener;
 
         public CategoryButton(String category) {
             this.category = category;
@@ -254,11 +231,7 @@ public class CategorySelectionDialog extends JDialog {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     if (actionListener != null) {
-                        actionListener.actionPerformed(new java.awt.event.ActionEvent(
-                                this,
-                                java.awt.event.ActionEvent.ACTION_PERFORMED,
-                                category
-                        ));
+                        actionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, category));
                     }
                 }
             });
@@ -299,7 +272,7 @@ public class CategorySelectionDialog extends JDialog {
             return category;
         }
 
-        public void addActionListener(java.awt.event.ActionListener listener) {
+        public void addActionListener(ActionListener listener) {
             this.actionListener = listener;
         }
 
@@ -307,10 +280,8 @@ public class CategorySelectionDialog extends JDialog {
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
             g2.setColor(getBackground());
             g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 8, 8);
-
             super.paintComponent(g2);
             g2.dispose();
         }

@@ -1,8 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class TimeSlotSettingsDialog extends JDialog {
 
@@ -21,10 +20,9 @@ public class TimeSlotSettingsDialog extends JDialog {
 
     private TimeSlotSettingsDialog() {
         super((Frame) null, "Time Slot Settings", true);
-        setSize(450, 480); // Увеличена высота с 350 до 480
+        setSize(450, 480);
         setMinimumSize(new Dimension(400, 450));
         setLocationRelativeTo(null);
-
         initComponents();
         setVisible(false);
     }
@@ -35,7 +33,6 @@ public class TimeSlotSettingsDialog extends JDialog {
         mainPanel.setBackground(ThemeColors.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        // Заголовок
         JLabel titleLabel = new JLabel("Configure Time Slots");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
@@ -43,7 +40,6 @@ public class TimeSlotSettingsDialog extends JDialog {
         mainPanel.add(titleLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Пояснение
         JLabel descriptionLabel = new JLabel("Set working hours (24-hour format, e.g., 9 to 21)");
         descriptionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         descriptionLabel.setForeground(ThemeColors.TEXT_SECONDARY);
@@ -51,19 +47,16 @@ public class TimeSlotSettingsDialog extends JDialog {
         mainPanel.add(descriptionLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
 
-        // Панель для ввода начального часа
         JPanel startPanel = createTimeInputPanel("Start hour (0-23):", "start");
         startPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(startPanel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Панель для ввода конечного часа
         JPanel endPanel = createTimeInputPanel("End hour (0-23):", "end");
         endPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(endPanel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Текущие настройки
         currentSettingsLabel = new JLabel(getCurrentSettingsText());
         currentSettingsLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         currentSettingsLabel.setForeground(ThemeColors.TEXT_DIM);
@@ -71,16 +64,13 @@ public class TimeSlotSettingsDialog extends JDialog {
         mainPanel.add(currentSettingsLabel);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        // Статус
         statusLabel = new JLabel(" ");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         statusLabel.setForeground(ThemeColors.CURRENT_SLOT);
         statusLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         mainPanel.add(statusLabel);
-
         mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Кнопка управления категориями
         JButton categoriesButton = new JButton("Manage Categories...");
         categoriesButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         categoriesButton.setBackground(ThemeColors.BUTTON);
@@ -100,21 +90,16 @@ public class TimeSlotSettingsDialog extends JDialog {
             public void mouseEntered(MouseEvent e) {
                 categoriesButton.setBackground(ThemeColors.BUTTON_HOVER);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 categoriesButton.setBackground(ThemeColors.BUTTON);
             }
         });
 
-        categoriesButton.addActionListener(e -> {
-            CategoryManagerDialog.getInstance().showDialog();
-        });
-
+        categoriesButton.addActionListener(e -> CategoryManagerDialog.getInstance().showDialog());
         mainPanel.add(categoriesButton);
         mainPanel.add(Box.createRigidArea(new Dimension(0, 25)));
 
-        // Кнопки Cancel и Apply
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         buttonPanel.setBackground(ThemeColors.BACKGROUND);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -127,10 +112,7 @@ public class TimeSlotSettingsDialog extends JDialog {
 
         buttonPanel.add(cancelButton);
         buttonPanel.add(applyButton);
-
         mainPanel.add(buttonPanel);
-
-        // Добавляем растягивающееся пространство внизу
         mainPanel.add(Box.createVerticalGlue());
 
         add(mainPanel);
@@ -195,7 +177,6 @@ public class TimeSlotSettingsDialog extends JDialog {
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(ThemeColors.BUTTON_HOVER);
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 button.setBackground(bgColor);
@@ -208,8 +189,7 @@ public class TimeSlotSettingsDialog extends JDialog {
     private String getCurrentSettingsText() {
         int start = DataStorage.getInstance().getStartHour();
         int end = DataStorage.getInstance().getEndHour();
-        return String.format("Current settings: %02d:00 - %02d:00 (%d hours)",
-                start, end, end - start);
+        return String.format("Current settings: %02d:00 - %02d:00 (%d hours)", start, end, end - start);
     }
 
     private void applySettings() {
@@ -234,7 +214,6 @@ public class TimeSlotSettingsDialog extends JDialog {
 
             statusLabel.setText("Settings applied successfully!");
             statusLabel.setForeground(ThemeColors.CURRENT_SLOT);
-
             currentSettingsLabel.setText(getCurrentSettingsText());
 
             Timer timer = new Timer(1500, e -> setVisible(false));

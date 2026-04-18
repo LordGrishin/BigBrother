@@ -1,8 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public class Slot extends JPanel {
     private JButton slotTimeButton;
@@ -19,7 +18,6 @@ public class Slot extends JPanel {
         setPreferredSize(new Dimension(0, 60));
         setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Кнопка с временем
         slotTimeButton = new JButton(timeSlot.toString());
         slotTimeButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         slotTimeButton.setForeground(ThemeColors.BUTTON_TEXT);
@@ -52,18 +50,15 @@ public class Slot extends JPanel {
 
         slotTimeButton.addActionListener(TimeSlotListener.getInstance());
 
-        // Лейбл с категорией
         slotCategoryLabel = new JLabel(category);
         slotCategoryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         slotCategoryLabel.setForeground(ThemeColors.TEXT_SECONDARY);
         slotCategoryLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        // Панель для кнопки времени
         JPanel leftPanel = new JPanel(new GridBagLayout());
         leftPanel.setOpaque(false);
         leftPanel.add(slotTimeButton);
 
-        // Панель для категории
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setOpaque(false);
         centerPanel.add(slotCategoryLabel);

@@ -1,16 +1,13 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class TimeSlotDialog extends JFrame {
-    private static final Logger logger = Logger.getLogger(TimeSlotDialog.class.getName());
 
     private JPanel slotsPanel;
     private Slot[] slotList;
@@ -29,20 +26,14 @@ public class TimeSlotDialog extends JFrame {
         setTitle("Time Tracker");
         setSize(450, 600);
         setMinimumSize(new Dimension(400, 400));
-
         setApplicationIcon();
         positionWindowLeftOfCenter();
-
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-
         addWindowListener(new TimeSlotDialogAdapter());
-
         initComponents();
         startAutoUpdateTimer();
         refreshTable();
         setVisible(true);
-
-        logger.info("TimeSlotDialog initialized");
     }
 
     private void startAutoUpdateTimer() {
@@ -57,27 +48,22 @@ public class TimeSlotDialog extends JFrame {
     private void setApplicationIcon() {
         try {
             Image icon = null;
-
-            // Сначала пробуем загрузить из файла рядом с JAR
             File iconFile = new File("eye.jpg");
             if (iconFile.exists()) {
                 icon = Toolkit.getDefaultToolkit().getImage(iconFile.getAbsolutePath());
             } else {
-                // Если нет - пробуем из ресурсов
                 java.net.URL imgURL = getClass().getClassLoader().getResource("eye.jpg");
                 if (imgURL != null) {
                     icon = Toolkit.getDefaultToolkit().getImage(imgURL);
                 } else {
-                    logger.warning("Icon not found, using default");
                     return;
                 }
             }
-
             if (icon != null) {
                 setIconImage(icon);
             }
         } catch (Exception e) {
-            logger.warning("Could not load application icon: " + e.getMessage());
+            // Ignore
         }
     }
 
@@ -93,11 +79,9 @@ public class TimeSlotDialog extends JFrame {
         mainPanel.setBackground(ThemeColors.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // Заголовок
         JPanel headerPanel = createHeaderPanel();
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // Панель со слотами
         slotsPanel = new JPanel();
         slotsPanel.setLayout(new BoxLayout(slotsPanel, BoxLayout.Y_AXIS));
         slotsPanel.setBackground(ThemeColors.BACKGROUND);
@@ -108,13 +92,11 @@ public class TimeSlotDialog extends JFrame {
         scrollPane.getVerticalScrollBar().setUnitIncrement(20);
         scrollPane.setBackground(ThemeColors.BACKGROUND);
         scrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
-
         scrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(10, 0));
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Кнопки внизу
         JPanel bottomPanel = createBottomPanel();
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
@@ -151,7 +133,6 @@ public class TimeSlotDialog extends JFrame {
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
 
-        // Левая часть - кнопки History, Settings, Statistics
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         leftPanel.setOpaque(false);
 
@@ -164,7 +145,6 @@ public class TimeSlotDialog extends JFrame {
         JButton statisticsButton = createStatisticsButton();
         leftPanel.add(statisticsButton);
 
-        // Правая часть - кнопка Hide to Tray
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightPanel.setOpaque(false);
 
@@ -206,10 +186,7 @@ public class TimeSlotDialog extends JFrame {
             }
         });
 
-        historyButton.addActionListener(e -> {
-            HistoryDialog.getInstance().showDialog();
-        });
-
+        historyButton.addActionListener(e -> HistoryDialog.getInstance().showDialog());
         return historyButton;
     }
 
@@ -242,14 +219,9 @@ public class TimeSlotDialog extends JFrame {
             }
         });
 
-        statisticsButton.addActionListener(e -> {
-            // Открываем окно статистики
-            StatisticsDialog.getInstance().showDialog();
-        });
-
+        statisticsButton.addActionListener(e -> StatisticsDialog.getInstance().showDialog());
         return statisticsButton;
     }
-
 
     private JButton createSettingsButton() {
         JButton settingsButton = new JButton("Settings");
@@ -280,10 +252,7 @@ public class TimeSlotDialog extends JFrame {
             }
         });
 
-        settingsButton.addActionListener(e -> {
-            TimeSlotSettingsDialog.getInstance().showDialog();
-        });
-
+        settingsButton.addActionListener(e -> TimeSlotSettingsDialog.getInstance().showDialog());
         return settingsButton;
     }
 
@@ -338,7 +307,6 @@ public class TimeSlotDialog extends JFrame {
 
         slotsPanel.revalidate();
         slotsPanel.repaint();
-
         updateWindowSize();
     }
 
@@ -382,6 +350,7 @@ public class TimeSlotDialog extends JFrame {
         }
         super.dispose();
     }
+
     private void checkSlotEnding() {
         DataStorage table = DataStorage.getInstance();
         TimeSlot currentSlot = table.getCurrentSlot();
@@ -390,9 +359,7 @@ public class TimeSlotDialog extends JFrame {
             LocalTime now = LocalTime.now();
             LocalTime slotEnd = currentSlot.getEndTime();
 
-            // Проверяем, осталось ли 5 минут до конца слота
             if (now.plusMinutes(5).isAfter(slotEnd) && now.isBefore(slotEnd)) {
-                // Проверяем, не показывали ли уже уведомление для этого слота
                 String lastNotification = table.getLastNotificationForSlot(currentSlot.toString());
                 if (lastNotification == null) {
                     showSlotEndingNotification(currentSlot);
@@ -401,6 +368,7 @@ public class TimeSlotDialog extends JFrame {
             }
         }
     }
+
     private void showSlotEndingNotification(TimeSlot slot) {
         String category = DataStorage.getInstance().getCategory(slot);
         String message;

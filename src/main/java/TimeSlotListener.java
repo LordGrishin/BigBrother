@@ -1,9 +1,6 @@
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.logging.Logger;
+import java.awt.event.*;
 
 public class TimeSlotListener implements ActionListener {
-    private static final Logger logger = Logger.getLogger(TimeSlotListener.class.getName());
 
     private static TimeSlotListener instance = null;
 
@@ -14,12 +11,10 @@ public class TimeSlotListener implements ActionListener {
         return instance;
     }
 
-    TimeSlotListener() {
-    }
+    TimeSlotListener() {}
 
     public void actionPerformed(ActionEvent event) {
         String slotString = event.getActionCommand();
-        logger.fine("Category selection requested for slot: " + slotString);
         CategorySelectionDialog.getInstance().selectCategory(slotString);
     }
 }

@@ -23,29 +23,12 @@ public class TimeSlot {
         return !now.isBefore(startTime) && now.isBefore(endTime);
     }
 
-    public LocalTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalTime getEndTime() {
-        return endTime;
-    }
-
-    public int getStartHour() {
-        return startTime.getHour();
-    }
-
-    public int getStartMinute() {
-        return startTime.getMinute();
-    }
-
-    public int getEndHour() {
-        return endTime.getHour();
-    }
-
-    public int getEndMinute() {
-        return endTime.getMinute();
-    }
+    public LocalTime getStartTime() { return startTime; }
+    public LocalTime getEndTime() { return endTime; }
+    public int getStartHour() { return startTime.getHour(); }
+    public int getStartMinute() { return startTime.getMinute(); }
+    public int getEndHour() { return endTime.getHour(); }
+    public int getEndMinute() { return endTime.getMinute(); }
 
     @Override
     public String toString() {

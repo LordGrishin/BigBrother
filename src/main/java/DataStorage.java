@@ -1,12 +1,9 @@
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class DataStorage {
-    private static final Logger logger = Logger.getLogger(DataStorage.class.getName());
     private static final String DATA_DIR = "data";
     private static final String CATEGORIES_FILE = "categories.properties";
     private static final String SETTINGS_FILE = "timetracker_settings.properties";
@@ -34,19 +31,14 @@ public class DataStorage {
         loadSettingsFromFile();
         initializeSlots();
         loadCategoriesFromFile();
-
-        // Загружаем данные за сегодня
         currentDate = LocalDate.now();
         loadTodayData();
-
-        logger.info("DataStorage initialized for date: " + currentDate);
     }
 
     private void createDataDirectory() {
         File dataDir = new File(DATA_DIR);
         if (!dataDir.exists()) {
             dataDir.mkdirs();
-            logger.info("Created data directory: " + dataDir.getAbsolutePath());
         }
     }
 
@@ -64,7 +56,6 @@ public class DataStorage {
             startHour = 9;
             endHour = 21;
             saveSettingsToFile();
-            logger.info("Created default settings file");
             return;
         }
 
@@ -73,9 +64,7 @@ public class DataStorage {
             props.load(in);
             startHour = Integer.parseInt(props.getProperty("startHour", "9"));
             endHour = Integer.parseInt(props.getProperty("endHour", "21"));
-            logger.info("Settings loaded: " + startHour + ":00 - " + endHour + ":00");
         } catch (IOException | NumberFormatException e) {
-            logger.warning("Failed to load settings: " + e.getMessage());
             startHour = 9;
             endHour = 21;
         }
@@ -88,9 +77,8 @@ public class DataStorage {
 
         try (FileOutputStream out = new FileOutputStream(SETTINGS_FILE)) {
             props.store(out, "Time Tracker Settings");
-            logger.fine("Settings saved");
         } catch (IOException e) {
-            logger.warning("Failed to save settings: " + e.getMessage());
+            // Ignore
         }
     }
 
@@ -101,7 +89,6 @@ public class DataStorage {
             LocalTime end = LocalTime.of(hour + 1, 0);
             slots.add(new TimeSlot(start, end));
         }
-        logger.info("Initialized " + slots.size() + " time slots");
     }
 
     private void loadCategoriesFromFile() {
@@ -125,10 +112,7 @@ public class DataStorage {
             if (categories.isEmpty()) {
                 addDefaultCategories();
             }
-
-            logger.info("Loaded " + categories.size() + " categories");
         } catch (IOException e) {
-            logger.warning("Failed to load categories: " + e.getMessage());
             addDefaultCategories();
         }
     }
@@ -145,9 +129,8 @@ public class DataStorage {
             writer.println("doing activities");
             writer.println("doing nothing");
             writer.println("chatting in telegram");
-            logger.info("Created default categories file");
         } catch (IOException e) {
-            logger.warning("Failed to create categories file: " + e.getMessage());
+            // Ignore
         }
     }
 
@@ -163,7 +146,6 @@ public class DataStorage {
         categories.add("doing nothing");
         categories.add("chatting in telegram");
         saveCategoriesToFile();
-        logger.info("Added default categories");
     }
 
     private void saveCategoriesToFile() {
@@ -171,9 +153,8 @@ public class DataStorage {
             for (String category : categories) {
                 writer.println(category);
             }
-            logger.fine("Categories saved to file");
         } catch (IOException e) {
-            logger.warning("Failed to save categories: " + e.getMessage());
+            // Ignore
         }
     }
 
@@ -182,7 +163,6 @@ public class DataStorage {
         todayData.clear();
 
         if (!file.exists()) {
-            logger.info("No data file for today, starting fresh");
             return;
         }
 
@@ -198,12 +178,11 @@ public class DataStorage {
                         todayData.put(slot, category);
                     }
                 } catch (Exception e) {
-                    logger.warning("Failed to parse slot: " + key);
+                    // Ignore
                 }
             }
-            logger.info("Loaded " + todayData.size() + " entries for today");
         } catch (IOException e) {
-            logger.warning("Failed to load today's data: " + e.getMessage());
+            // Ignore
         }
     }
 
@@ -217,16 +196,14 @@ public class DataStorage {
 
         try (FileOutputStream out = new FileOutputStream(getTodayFileName())) {
             props.store(out, "Time Tracker - " + currentDate);
-            logger.fine("Today's data saved to: " + getTodayFileName());
         } catch (IOException e) {
-            logger.warning("Failed to save today's data: " + e.getMessage());
+            // Ignore
         }
     }
 
     public void checkAndReloadIfNewDay() {
         LocalDate today = LocalDate.now();
         if (!today.equals(currentDate)) {
-            logger.info("New day detected! Switching from " + currentDate + " to " + today);
             currentDate = today;
             todayData.clear();
             notificationSent.clear();
@@ -247,7 +224,6 @@ public class DataStorage {
         checkAndReloadIfNewDay();
         todayData.put(slot, category);
         saveTodayData();
-        logger.fine("Category set: " + slot + " -> " + category);
     }
 
     public void setCategory(String slotString, String category) {
@@ -275,20 +251,17 @@ public class DataStorage {
         if (!categories.contains(category)) {
             categories.add(category);
             saveCategoriesToFile();
-            logger.info("Category added: " + category);
         }
     }
 
     public void removeCategory(String category) {
         if (categories.remove(category)) {
             saveCategoriesToFile();
-            logger.info("Category removed: " + category);
         }
     }
 
     public void reloadCategories() {
         loadCategoriesFromFile();
-        logger.info("Categories reloaded from file");
     }
 
     public TimeSlot getCurrentSlot() {
@@ -334,7 +307,6 @@ public class DataStorage {
         }
 
         saveTodayData();
-        logger.info("Time slots updated: " + startHour + ":00 - " + endHour + ":00");
     }
 
     public String getLastNotificationForSlot(String slotString) {
@@ -345,7 +317,6 @@ public class DataStorage {
         notificationSent.put(slotString, status);
     }
 
-    // Методы для статистики (будут использоваться позже)
     public List<LocalDate> getAvailableDates() {
         List<LocalDate> dates = new ArrayList<>();
         File dataDir = new File(DATA_DIR);
@@ -357,7 +328,7 @@ public class DataStorage {
                 try {
                     dates.add(LocalDate.parse(name));
                 } catch (Exception e) {
-                    // Пропускаем файлы с неправильным именем
+                    // Ignore
                 }
             }
         }
@@ -381,20 +352,19 @@ public class DataStorage {
                     TimeSlot slot = TimeSlot.fromString(key);
                     result.put(slot, props.getProperty(key));
                 } catch (Exception e) {
-                    // Пропускаем
+                    // Ignore
                 }
             }
         } catch (IOException e) {
-            logger.warning("Failed to load data for date " + date);
+            // Ignore
         }
         return result;
     }
-    // Методы для работы с историей
+
     public void setCategoryForDate(LocalDate date, TimeSlot slot, String category) {
         Map<TimeSlot, String> dayData = getDataForDate(date);
         dayData.put(slot, category);
         saveDataForDate(date, dayData);
-        logger.info("Category set for " + date + ": " + slot + " -> " + category);
     }
 
     public void setCategoryForDate(LocalDate date, String slotString, String category) {
@@ -412,9 +382,8 @@ public class DataStorage {
 
         try (FileOutputStream out = new FileOutputStream(getFileNameForDate(date))) {
             props.store(out, "Time Tracker - " + date);
-            logger.fine("Data saved for date: " + date);
         } catch (IOException e) {
-            logger.warning("Failed to save data for date " + date + ": " + e.getMessage());
+            // Ignore
         }
     }
 }

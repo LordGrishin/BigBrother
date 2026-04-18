@@ -1,12 +1,11 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class HistoryDialog extends JDialog {
 
@@ -28,7 +27,6 @@ public class HistoryDialog extends JDialog {
         setSize(700, 600);
         setMinimumSize(new Dimension(600, 500));
         setLocationRelativeTo(null);
-
         initComponents();
         setVisible(false);
     }
@@ -38,20 +36,17 @@ public class HistoryDialog extends JDialog {
         mainPanel.setBackground(ThemeColors.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Заголовок
         JLabel titleLabel = new JLabel("Activity History");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
         titleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Split Pane - слева даты, справа слоты
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setDividerLocation(250);
         splitPane.setDividerSize(2);
         splitPane.setBorder(null);
 
-        // Левая панель - список дат
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setBackground(ThemeColors.BACKGROUND);
 
@@ -68,7 +63,7 @@ public class HistoryDialog extends JDialog {
         JScrollPane datesScrollPane = new JScrollPane(datesPanel);
         datesScrollPane.setBorder(BorderFactory.createEmptyBorder());
         datesScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        datesScrollPane.getVerticalScrollBar().setUnitIncrement(30); // Ускоренная прокрутка
+        datesScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         datesScrollPane.setBackground(ThemeColors.BACKGROUND);
         datesScrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
         datesScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
@@ -76,7 +71,6 @@ public class HistoryDialog extends JDialog {
 
         leftPanel.add(datesScrollPane, BorderLayout.CENTER);
 
-        // Правая панель - слоты для выбранной даты
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBackground(ThemeColors.BACKGROUND);
         rightPanel.setBorder(new EmptyBorder(0, 15, 0, 0));
@@ -94,7 +88,7 @@ public class HistoryDialog extends JDialog {
         JScrollPane slotsScrollPane = new JScrollPane(slotsPanel);
         slotsScrollPane.setBorder(BorderFactory.createEmptyBorder());
         slotsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        slotsScrollPane.getVerticalScrollBar().setUnitIncrement(30); // Ускоренная прокрутка
+        slotsScrollPane.getVerticalScrollBar().setUnitIncrement(30);
         slotsScrollPane.setBackground(ThemeColors.BACKGROUND);
         slotsScrollPane.getViewport().setBackground(ThemeColors.BACKGROUND);
         slotsScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
@@ -107,7 +101,6 @@ public class HistoryDialog extends JDialog {
 
         mainPanel.add(splitPane, BorderLayout.CENTER);
 
-        // Кнопка Close
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
         bottomPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
@@ -191,7 +184,7 @@ public class HistoryDialog extends JDialog {
         if (date.equals(LocalDate.now())) {
             JLabel todayLabel = new JLabel("(Today)");
             todayLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-            todayLabel.setForeground(ThemeColors.TEXT_PRIMARY); // ← БЕЛЫЙ ЦВЕТ вместо синего
+            todayLabel.setForeground(ThemeColors.TEXT_PRIMARY);
             row.add(todayLabel, BorderLayout.EAST);
         }
 
@@ -254,7 +247,6 @@ public class HistoryDialog extends JDialog {
         setVisible(true);
     }
 
-    // Внутренний класс для слота в истории
     private class HistorySlot extends JPanel {
         private final TimeSlot timeSlot;
         private final LocalDate date;
@@ -271,7 +263,6 @@ public class HistoryDialog extends JDialog {
             setCursor(new Cursor(Cursor.HAND_CURSOR));
             setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColors.TITLE_BAR));
 
-            // Время
             JLabel timeLabel = new JLabel(timeSlot.toString());
             timeLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
             timeLabel.setForeground(ThemeColors.BUTTON_TEXT);
@@ -286,7 +277,6 @@ public class HistoryDialog extends JDialog {
             westPanel.setPreferredSize(new Dimension(140, 55));
             westPanel.add(timePanel, BorderLayout.CENTER);
 
-            // Категория
             categoryLabel = new JLabel(category.isEmpty() ? "Click to set category" : category);
             categoryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             categoryLabel.setForeground(category.isEmpty() ? ThemeColors.TEXT_DIM : ThemeColors.TEXT_PRIMARY);

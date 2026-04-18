@@ -1,8 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
 
 public class CategoryManagerDialog extends JDialog {
@@ -33,14 +32,12 @@ public class CategoryManagerDialog extends JDialog {
         mainPanel.setBackground(ThemeColors.BACKGROUND);
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Заголовок
         JLabel titleLabel = new JLabel("Manage Categories");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(ThemeColors.TEXT_PRIMARY);
         titleLabel.setBorder(new EmptyBorder(0, 0, 15, 0));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
-        // Панель с категориями
         categoriesPanel = new JPanel();
         categoriesPanel.setLayout(new BoxLayout(categoriesPanel, BoxLayout.Y_AXIS));
         categoriesPanel.setBackground(ThemeColors.BACKGROUND);
@@ -56,7 +53,6 @@ public class CategoryManagerDialog extends JDialog {
 
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Панель для добавления новой категории
         JPanel addPanel = new JPanel(new BorderLayout(10, 0));
         addPanel.setBackground(ThemeColors.BACKGROUND);
         addPanel.setBorder(new EmptyBorder(15, 0, 15, 0));
@@ -77,7 +73,6 @@ public class CategoryManagerDialog extends JDialog {
         addPanel.add(newCategoryField, BorderLayout.CENTER);
         addPanel.add(addButton, BorderLayout.EAST);
 
-        // Кнопки внизу
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         bottomPanel.setBackground(ThemeColors.BACKGROUND);
 
